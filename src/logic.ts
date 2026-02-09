@@ -39,14 +39,14 @@ function calculatePairProbability(counts: DeckCounts, total: number): number {
   return prob;
 }
 
-export function calculateBaccaratEV(counts: DeckCounts, payouts: Payouts): CalculationResult {
+export function calculateBaccaratEV(counts: DeckCounts, payouts: Payouts, commissionRate: number = 2.0): CalculationResult {
   const totalCards = Object.values(counts).reduce((a, b) => a + b, 0);
 
   // Super 6: Banker wins with 6 (2 cards)
   const super6Prob = 0;
 
-  // 退水計算 (1.8096%)
-  const commission = 1.8096 / 100;
+  // 退水計算 (可調整)
+  const commission = commissionRate / 100;
 
   if (totalCards < 6) {
     return {

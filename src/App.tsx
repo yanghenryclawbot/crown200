@@ -10,7 +10,7 @@ export default function App() {
   // 設定
   const [showSettings, setShowSettings] = useState(false)
   const [capital, setCapital] = useState(10000000) // 1000萬
-  const [commission, setCommission] = useState(1.8096) // 退水 1.8096%
+  const [commission, setCommission] = useState(2.0) // 退水 2.0%
 
   // 牌組狀態
   const [counts, setCounts] = useState<DeckCounts>(() => {
@@ -34,8 +34,8 @@ export default function App() {
       bankerPair: 11.0,
       super6: 12.0
     }
-    return calculateBaccaratEV(counts, payouts)
-  }, [counts])
+    return calculateBaccaratEV(counts, payouts, commission)
+  }, [counts, commission])
 
   // 計算推薦投注
   const recommendations = useMemo(() => {
@@ -64,16 +64,23 @@ export default function App() {
     }))
   }
 
+  // 分隔線
+  const handleSeparator = () => {
+    setHistory(prev => ['|', ...prev].slice(0, 100))
+  }
+
   // 清除
   const handleClear = () => {
-    setHistory([])
-    setCounts(() => {
-      const initial: DeckCounts = {}
-      for (let i = 1; i <= 13; i++) {
-        initial[i] = INITIAL_DECK_COUNT
-      }
-      return initial
-    })
+    if (confirm('確定要清除所有資料嗎？')) {
+      setHistory([])
+      setCounts(() => {
+        const initial: DeckCounts = {}
+        for (let i = 1; i <= 13; i++) {
+          initial[i] = INITIAL_DECK_COUNT
+        }
+        return initial
+      })
+    }
   }
 
   // 倒退
@@ -187,7 +194,7 @@ export default function App() {
           {history.length === 0 ? '輸入牌面' : history.filter(h => h !== '|').slice(-6).join(' ')}
         </div>
 
-        {/* 剩餘牌數 + C 按鈕 */}
+        {/* 剩餘牌數 + 分隔線按鈕 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ 
             background: '#333', 
@@ -200,9 +207,9 @@ export default function App() {
             剩餘 {Object.values(counts).reduce((a, b) => a + b, 0)}
           </span>
           <button
-            onClick={handleClear}
+            onClick={handleSeparator}
             style={{
-              background: '#ef4444',
+              background: '#3b82f6',
               border: 'none',
               borderRadius: '12px',
               padding: '10px 16px',
@@ -211,7 +218,7 @@ export default function App() {
               fontWeight: 600
             }}
           >
-            C
+            |
           </button>
         </div>
       </div>
@@ -224,7 +231,7 @@ export default function App() {
           padding: '16px',
           marginBottom: '12px',
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: '1fr 1fr 1fr',
           gap: '12px'
         }}>
           <div>
@@ -261,6 +268,25 @@ export default function App() {
                 fontSize: '16px'
               }}
             />
+          </div>
+          <div>
+            <label style={{ display: 'block', color: '#888', fontSize: '12px', marginBottom: '6px' }}>操作</label>
+            <button
+              onClick={handleClear}
+              style={{
+                width: '100%',
+                background: '#ef4444',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px 12px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              清除資料
+            </button>
           </div>
         </div>
       )}
