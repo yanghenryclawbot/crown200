@@ -465,23 +465,6 @@ export default function App() {
           >
             ⌫
           </button>
-
-          {/* 清除 */}
-          <button
-            onClick={handleClear}
-            style={{
-              background: '#ef4444',
-              border: 'none',
-              borderRadius: '16px',
-              padding: '20px',
-              fontSize: '14px',
-              fontWeight: 600,
-              color: '#fff',
-              cursor: 'pointer'
-            }}
-          >
-            C
-          </button>
         </div>
       </div>
     </div>
