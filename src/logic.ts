@@ -199,8 +199,8 @@ export function calculateBaccaratEV(counts: DeckCounts, payouts: Payouts): Calcu
   const evT = tieProb * payouts.tie - (1 - tieProb) + (commission / 2);
   const evPPair = pPairProb * (payouts.playerPair + 1) - 1 + (commission / 2);
   const evBPair = bPairProb * (payouts.bankerPair + 1) - 1 + (commission / 2);
-  // 超6：兩張牌6點莊贏 1:12，三張牌6點莊贏 1:20
-  const evSuper6 = tiger6_2_Prob * 12 + tiger6_3_Prob * 20 - (1 - tiger6_2_Prob - tiger6_3_Prob) + (commission / 2);
+  // 超6：莊6點贏（不論兩張或三張牌）赔12倍
+  const evSuper6 = (tiger6_2_Prob + tiger6_3_Prob) * 12 - (1 - tiger6_2_Prob - tiger6_3_Prob) + (commission / 2);
 
   return {
     player: { label: '閒', probability: pWinProb, payout: payouts.player, ev: evP },
