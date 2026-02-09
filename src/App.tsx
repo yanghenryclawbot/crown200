@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { calculateBaccaratEV, DeckCounts, Payouts } from './logic'
 
 const CARD_LABELS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K']
@@ -54,7 +54,9 @@ export default function App() {
 
   // 處理數字輸入
   const handleNumber = (value: number) => {
-    const side = history.length % 2 === 0 ? '莊' : '閒'
+    // 計算不包含分隔線的歷史來決定莊閒
+    const realHistory = history.filter(h => h !== '|')
+    const side = realHistory.length % 2 === 0 ? '莊' : '閒'
     setHistory(prev => [...prev, `${side}${CARD_LABELS[value - 1]}`])
     setCounts(prev => ({
       ...prev,
@@ -78,6 +80,11 @@ export default function App() {
   const handleBack = () => {
     if (history.length === 0) return
     const last = history[history.length - 1]
+    if (last === '|') {
+      // 分隔線
+      setHistory(prev => prev.slice(0, -1))
+      return
+    }
     const label = last.replace('莊', '').replace('閒', '')
     const value = CARD_LABELS.indexOf(label) + 1
     setCounts(prev => ({
@@ -86,6 +93,60 @@ export default function App() {
     }))
     setHistory(prev => prev.slice(0, -1))
   }
+
+  // 鍵盤快捷鍵
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 數字鍵 1-9
+      const numMap: Record<string, number> = {
+        '1': 1, '2': 2, '3': 3, '4': 4, '5': 5,
+        '6': 6, '7': 7, '8': 8, '9': 9
+      }
+      
+      if (numMap.hasOwnProperty(e.key)) {
+        e.preventDefault()
+        handleNumber(numMap[e.key])
+      }
+      
+      // 0 鍵：移除 10
+      if (e.key === '0') {
+        e.preventDefault()
+        handleNumber(10)
+      }
+      
+      // A 鍵：移除 Ace (1)
+      if (e.key === 'a' || e.key === 'A') {
+        e.preventDefault()
+        handleNumber(1)
+      }
+      
+      // T 鍵：移除 10
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault()
+        handleNumber(10)
+      }
+      
+      // J, Q, K 鍵
+      const faceMap: Record<string, number> = {
+        'j': 11, 'J': 11,
+        'q': 12, 'Q': 12,
+        'k': 13, 'K': 13
+      }
+      if (faceMap.hasOwnProperty(e.key)) {
+        e.preventDefault()
+        handleNumber(faceMap[e.key])
+      }
+      
+      // 空格鍵：分隔線
+      if (e.key === ' ') {
+        e.preventDefault()
+        setHistory(prev => ['|', ...prev].slice(0, 100))
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [history, counts])
 
   return (
     <div style={{
@@ -123,7 +184,7 @@ export default function App() {
         </button>
 
         <div style={{ fontSize: '14px', color: '#888' }}>
-          {history.length === 0 ? '輸入牌面' : history.slice(-6).join(' ')}
+          {history.length === 0 ? '輸入牌面' : history.filter(h => h !== '|').slice(-6).join(' ')}
         </div>
 
         {/* 剩餘牌數 + C 按鈕 */}
@@ -258,6 +319,20 @@ export default function App() {
         flexWrap: 'wrap'
       }}>
         {history.map((card, i) => {
+          if (card === '|') {
+            return (
+              <div key={i} style={{
+                background: '#fbbf24',
+                borderRadius: '6px',
+                padding: '6px 10px',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#000'
+              }}>
+                |
+              </div>
+            )
+          }
           const label = card.replace('莊', '').replace('閒', '')
           return (
             <div key={i} style={{
@@ -317,7 +392,7 @@ export default function App() {
           textAlign: 'right',
           minHeight: '44px'
         }}>
-          {history.slice(-8).join(' ') || '0'}
+          {history.filter(h => h !== '|').slice(-8).join(' ') || '0'}
         </div>
 
         {/* 按鍵 */}
