@@ -209,10 +209,6 @@ export default function App() {
           ⚙️
         </button>
 
-        <div style={{ fontSize: '14px', color: '#888' }}>
-          {history.length === 0 ? '輸入牌面' : history.filter(h => h !== '|').slice(-6).join(' ')}
-        </div>
-
         {/* 剩餘牌數 + 分隔線按鈕 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ 
@@ -256,9 +252,15 @@ export default function App() {
           <div>
             <label style={{ display: 'block', color: '#888', fontSize: '12px', marginBottom: '6px' }}>本金 (萬)</label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={capital / 10000}
-              onChange={(e) => setCapital(parseInt(e.target.value) * 10000)}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '' || /^\d+$/.test(val)) {
+                  setCapital(val === '' ? 0 : parseInt(val) * 10000)
+                }
+              }}
               style={{
                 width: '100%',
                 background: '#333',
@@ -273,10 +275,15 @@ export default function App() {
           <div>
             <label style={{ display: 'block', color: '#888', fontSize: '12px', marginBottom: '6px' }}>退水 (%)</label>
             <input
-              type="number"
-              step="0.1"
+              type="text"
+              inputMode="decimal"
               value={commission}
-              onChange={(e) => setCommission(parseFloat(e.target.value))}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                  setCommission(val === '' ? 0 : parseFloat(val))
+                }
+              }}
               style={{
                 width: '100%',
                 background: '#333',
