@@ -37,19 +37,38 @@ export default function App() {
     return calculateBaccaratEV(counts, payouts, commission)
   }, [counts, commission])
 
-  // 計算推薦投注
+  // 計算推薦投注 (使用凱莉定理)
   const recommendations = useMemo(() => {
-    const kellyFactor = 0.25
+    const kellyFraction = 0.25 // 凱莉分數，通常用1/4凱莉來降低波動
     const bets = [results.banker, results.player, results.tie, results.bankerPair, results.playerPair, results.super6]
     
-    return bets.map(bet => ({
-      type: bet.label,
-      label: bet.label,
-      probability: bet.probability,
-      ev: bet.ev,
-      amount: bet.ev > 0 ? Math.floor(bet.ev * kellyFactor * capital / 100) : 0,
-      shouldBet: bet.ev > 0.005
-    })).sort((a, b) => b.amount - a.amount)
+    return bets.map(bet => {
+      const winProb = bet.probability
+      const lossProb = 1 - winProb
+      
+      // 凱莉公式: Kelly % = (bp - q) / b
+      // b = 淨赔率 (payout - 1)
+      // p = 獲勝機率
+      // q = 失敗機率 (1-p)
+      
+      let kellyPercent = 0
+      if (winProb > 0) {
+        const payout = bet.payout
+        const b = payout - 1 // 淨赔率
+        kellyPercent = (b * winProb - lossProb) / b
+      }
+      
+      const amount = kellyPercent > 0 ? Math.floor(kellyPercent * kellyFraction * capital) : 0
+      
+      return {
+        type: bet.label,
+        label: bet.label,
+        probability: winProb,
+        ev: bet.ev,
+        amount: amount,
+        shouldBet: kellyPercent > 0 && winProb > 0.01
+      }
+    }).sort((a, b) => b.amount - a.amount)
   }, [results, capital])
 
   // 處理數字輸入
