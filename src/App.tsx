@@ -4,8 +4,6 @@ import { calculateBaccaratEV, DeckCounts, Payouts } from './logic'
 const CARD_LABELS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K']
 const INITIAL_DECK_COUNT = 32 // 8 decks
 
-type BetType = 'banker' | 'player' | 'tie' | 'bankerPair' | 'playerPair' | 'super6'
-
 export default function App() {
   // 設定
   const [showSettings, setShowSettings] = useState(false)
@@ -46,11 +44,6 @@ export default function App() {
       const winProb = bet.probability
       const lossProb = 1 - winProb
       
-      // 凱莉公式: Kelly % = (bp - q) / b
-      // b = 淨赔率 (payout - 1)
-      // p = 獲勝機率
-      // q = 失敗機率 (1-p)
-      
       let kellyPercent = 0
       if (winProb > 0) {
         const payout = bet.payout
@@ -73,7 +66,6 @@ export default function App() {
 
   // 處理數字輸入
   const handleNumber = (value: number) => {
-    // 計算不包含分隔線的歷史來決定莊閒
     const realHistory = history.filter(h => h !== '|')
     const side = realHistory.length % 2 === 0 ? '莊' : '閒'
     setHistory(prev => [...prev, `${side}${CARD_LABELS[value - 1]}`])
@@ -107,7 +99,6 @@ export default function App() {
     if (history.length === 0) return
     const last = history[history.length - 1]
     if (last === '|') {
-      // 分隔線
       setHistory(prev => prev.slice(0, -1))
       return
     }
@@ -123,7 +114,6 @@ export default function App() {
   // 鍵盤快捷鍵
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 數字鍵 1-9
       const numMap: Record<string, number> = {
         '1': 1, '2': 2, '3': 3, '4': 4, '5': 5,
         '6': 6, '7': 7, '8': 8, '9': 9
@@ -134,25 +124,21 @@ export default function App() {
         handleNumber(numMap[e.key])
       }
       
-      // 0 鍵：移除 10
       if (e.key === '0') {
         e.preventDefault()
         handleNumber(10)
       }
       
-      // A 鍵：移除 Ace (1)
       if (e.key === 'a' || e.key === 'A') {
         e.preventDefault()
         handleNumber(1)
       }
       
-      // T 鍵：移除 10
       if (e.key === 't' || e.key === 'T') {
         e.preventDefault()
         handleNumber(10)
       }
       
-      // J, Q, K 鍵
       const faceMap: Record<string, number> = {
         'j': 11, 'J': 11,
         'q': 12, 'Q': 12,
@@ -163,7 +149,6 @@ export default function App() {
         handleNumber(faceMap[e.key])
       }
       
-      // 空格鍵：分隔線
       if (e.key === ' ') {
         e.preventDefault()
         setHistory(prev => ['|', ...prev].slice(0, 100))
@@ -179,7 +164,11 @@ export default function App() {
       minHeight: '100vh',
       background: '#000',
       color: '#fff',
-      padding: 'env(safe-area-inset-top) 12px env(safe-area-inset-bottom)'
+      padding: 0,
+      margin: 0,
+      width: '100%',
+      maxWidth: '100%',
+      overflow: 'hidden'
     }}>
       {/* 頂部 */}
       <div style={{
@@ -187,8 +176,7 @@ export default function App() {
         top: 0,
         background: 'rgba(0,0,0,0.9)',
         backdropFilter: 'blur(10px)',
-        margin: '-12px -12px 12px',
-        padding: '12px',
+        padding: '12px 16px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -209,7 +197,6 @@ export default function App() {
           ⚙️
         </button>
 
-        {/* 剩餘牌數 + 分隔線按鈕 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ 
             background: '#333', 
@@ -242,9 +229,7 @@ export default function App() {
       {showSettings && (
         <div style={{
           background: '#1a1a1a',
-          borderRadius: '16px',
           padding: '16px',
-          marginBottom: '12px',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr',
           gap: '12px'
@@ -322,7 +307,7 @@ export default function App() {
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '8px',
-        marginBottom: '12px'
+        padding: '0 16px 8px'
       }}>
         {recommendations.map(bet => (
           <button
@@ -333,7 +318,7 @@ export default function App() {
               background: bet.shouldBet ? (bet.ev > 0.02 ? 'rgba(34,197,94,0.2)' : 'rgba(251,191,36,0.2)') : 'rgba(100,100,100,0.2)',
               border: `2px solid ${bet.shouldBet ? (bet.ev > 0.02 ? '#22c55e' : '#fbbf24') : '#444'}`,
               borderRadius: '12px',
-              padding: '12px 8px',
+              padding: '10px 4px',
               color: '#fff',
               cursor: bet.shouldBet ? 'pointer' : 'not-allowed',
               opacity: bet.shouldBet ? 1 : 0.5
@@ -363,9 +348,7 @@ export default function App() {
       {/* 已出牌 */}
       <div style={{
         background: '#1a1a1a',
-        borderRadius: '16px',
-        padding: '12px',
-        marginBottom: '12px',
+        padding: '12px 16px',
         display: 'flex',
         gap: '4px',
         flexWrap: 'wrap'
@@ -404,9 +387,7 @@ export default function App() {
       {/* 牌庫顯示 */}
       <div style={{
         background: '#1a1a1a',
-        borderRadius: '16px',
-        padding: '12px',
-        marginBottom: '12px',
+        padding: '8px 16px',
         display: 'grid',
         gridTemplateColumns: 'repeat(13, 1fr)',
         gap: '4px'
@@ -426,34 +407,22 @@ export default function App() {
         ))}
       </div>
 
-      {/* 按鍵區 */}
+      {/* 按鍵區 - 滿版無圓角 */}
       <div style={{
         background: '#0a0a0a',
-        borderRadius: '24px 24px 0 0',
-        padding: '16px'
+        padding: '16px',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end'
       }}>
-        {/* 輸入顯示 */}
-        <div style={{
-          background: '#1a1a1a',
-          borderRadius: '12px',
-          padding: '12px 16px',
-          marginBottom: '12px',
-          fontSize: '18px',
-          fontFamily: 'monospace',
-          color: '#fff',
-          textAlign: 'right',
-          minHeight: '44px'
-        }}>
-          {history.filter(h => h !== '|').slice(-8).join(' ') || '0'}
-        </div>
-
         {/* 按鍵 */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '8px'
         }}>
-          {/* 7, 8, 9 */}
           {[7, 8, 9].map(num => (
             <button
               key={num}
@@ -488,7 +457,6 @@ export default function App() {
             J
           </button>
 
-          {/* 4, 5, 6 */}
           {[4, 5, 6].map(num => (
             <button
               key={num}
@@ -523,7 +491,6 @@ export default function App() {
             Q
           </button>
 
-          {/* 1, 2, 3 */}
           {[1, 2, 3].map(num => (
             <button
               key={num}
@@ -558,7 +525,6 @@ export default function App() {
             K
           </button>
 
-          {/* 10 */}
           <button
             onClick={() => handleNumber(10)}
             style={{
@@ -576,7 +542,6 @@ export default function App() {
             10
           </button>
 
-          {/* 倒退 */}
           <button
             onClick={handleBack}
             style={{
