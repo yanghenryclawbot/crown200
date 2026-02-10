@@ -235,27 +235,30 @@ export default function App() {
           gap: '12px'
         }}>
           <div>
-            <label style={{ display: 'block', color: '#888', fontSize: '12px', marginBottom: '6px' }}>本金 (萬)</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={capital / 10000}
-              onChange={(e) => {
-                const val = e.target.value
-                if (val === '' || /^\d+$/.test(val)) {
-                  setCapital(val === '' ? 0 : parseInt(val) * 10000)
-                }
-              }}
-              style={{
-                width: '100%',
-                background: '#333',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: '#fff',
-                fontSize: '16px'
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <label style={{ display: 'block', color: '#888', fontSize: '12px', marginBottom: '6px' }}>本金</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={capital / 10000}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === '' || /^\d+$/.test(val)) {
+                    setCapital(val === '' ? 0 : parseInt(val) * 10000)
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  background: '#333',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 40px 10px 12px',
+                  color: '#fff',
+                  fontSize: '16px'
+                }}
+              />
+              <span style={{ position: 'absolute', right: '12px', bottom: '10px', color: '#888', fontSize: '16px' }}>萬</span>
+            </div>
           </div>
           <div>
             <label style={{ display: 'block', color: '#888', fontSize: '12px', marginBottom: '6px' }}>退水 (%)</label>
@@ -334,7 +337,7 @@ export default function App() {
               color: bet.ev > 0 ? '#22c55e' : bet.ev < 0 ? '#ef4444' : '#888',
               marginTop: '4px'
             }}>
-              {bet.ev > 0 ? '+' : ''}{(bet.ev * 100).toFixed(2)}%
+              {bet.ev > 0 ? '+' : ''}{(bet.ev * 100).toFixed(4)}%
             </div>
             {bet.shouldBet && (
               <div style={{ fontSize: '11px', color: '#22c55e', marginTop: '4px', fontWeight: 600 }}>
